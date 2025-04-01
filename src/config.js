@@ -83,7 +83,7 @@ export const UNIFIED_RULES = [
 	{
 		name: 'Streaming',
 		outbound: t('outboundNames.Streaming'),
-		site_rules: ['netflix', 'hulu', 'disney', 'hbo', 'amazon','bahamut'],
+		site_rules: ['netflix', 'hulu', 'disney', 'hbo', 'amazon', 'bahamut'],
 		ip_rules: []
 	},
 	{
@@ -101,7 +101,7 @@ export const UNIFIED_RULES = [
 	{
 		name: 'Financial',
 		outbound: t('outboundNames.Financial'),
-		site_rules: ['paypal', 'visa', 'mastercard','stripe','wise'],
+		site_rules: ['paypal', 'visa', 'mastercard', 'stripe', 'wise'],
 		ip_rules: []
 	},
 	{
@@ -122,8 +122,8 @@ export const PREDEFINED_RULE_SETS = {
 	minimal: ['Location:CN', 'Private', 'Non-China'],
 	balanced: ['Location:CN', 'Private', 'Non-China', 'Google', 'Youtube', 'AI Services', 'Telegram'],
 	comprehensive: UNIFIED_RULES.map(rule => rule.name)
-  };
-  
+};
+
 
 
 // Generate SITE_RULE_SETS and IP_RULE_SETS from UNIFIED_RULES
@@ -158,38 +158,38 @@ export const CLASH_IP_RULE_SETS = UNIFIED_RULES.reduce((acc, rule) => {
 
 // Helper function to get outbounds based on selected rule names
 export function getOutbounds(selectedRuleNames) {
-    if (!selectedRuleNames || !Array.isArray(selectedRuleNames)) {
-        return [];
-    }
-    return UNIFIED_RULES
-      .filter(rule => selectedRuleNames.includes(rule.name))
-      .map(rule => rule.name);
+	if (!selectedRuleNames || !Array.isArray(selectedRuleNames)) {
+		return [];
+	}
+	return UNIFIED_RULES
+		.filter(rule => selectedRuleNames.includes(rule.name))
+		.map(rule => rule.name);
 }
 
 // Helper function to generate rules based on selected rule names
 export function generateRules(selectedRules = [], customRules = []) {
 	if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
-	  selectedRules = PREDEFINED_RULE_SETS[selectedRules];
+		selectedRules = PREDEFINED_RULE_SETS[selectedRules];
 	}
-  
+
 	if (!selectedRules || selectedRules.length === 0) {
-	  selectedRules = PREDEFINED_RULE_SETS.minimal;
+		selectedRules = PREDEFINED_RULE_SETS.minimal;
 	}
-  
+
 	const rules = [];
-  
+
 	UNIFIED_RULES.forEach(rule => {
-	  if (selectedRules.includes(rule.name)) {
-		rules.push({
-		  site_rules: rule.site_rules,
-		  ip_rules: rule.ip_rules,
-		  domain_suffix: rule?.domain_suffix,
-		  ip_cidr: rule?.ip_cidr,
-		  outbound: rule.name
-		});
-	  }
+		if (selectedRules.includes(rule.name)) {
+			rules.push({
+				site_rules: rule.site_rules,
+				ip_rules: rule.ip_rules,
+				domain_suffix: rule?.domain_suffix,
+				ip_cidr: rule?.ip_cidr,
+				outbound: rule.name
+			});
+		}
 	});
-  
+
 	customRules.reverse();
 	customRules.forEach((rule) => {
 		rules.unshift({
@@ -201,182 +201,182 @@ export function generateRules(selectedRules = [], customRules = []) {
 			protocol: rule.protocol ? rule.protocol.split(',') : [],
 			outbound: rule.name
 		});
-		});
-  
+	});
+
 	return rules;
-  }
+}
 
 
 export function generateRuleSets(selectedRules = [], customRules = []) {
-  if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
-    selectedRules = PREDEFINED_RULE_SETS[selectedRules];
-  }
-  
-  if (!selectedRules || selectedRules.length === 0) {
-    selectedRules = PREDEFINED_RULE_SETS.minimal;
-  }
-
-  const selectedRulesSet = new Set(selectedRules);
-
-  const siteRuleSets = new Set();
-  const ipRuleSets = new Set();
-
-  const ruleSets = [];
-
-  UNIFIED_RULES.forEach(rule => {
-    if (selectedRulesSet.has(rule.name)) {
-      rule.site_rules.forEach(siteRule => siteRuleSets.add(siteRule));
-      rule.ip_rules.forEach(ipRule => ipRuleSets.add(ipRule));
-    }
-  });
-  
-
-
-  const site_rule_sets = Array.from(siteRuleSets).map(rule => ({
-    tag: rule,
-    type: 'remote',
-    format: 'binary',
-    url: `${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`,
-  }));
-
-  const ip_rule_sets = Array.from(ipRuleSets).map(rule => ({
-    tag: `${rule}-ip`,
-    type: 'remote',
-    format: 'binary',
-    url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
-  }));
-
-  if(!selectedRules.includes('Non-China')){
-	site_rule_sets.push({
-		tag: 'geolocation-!cn',
-		type: 'remote',
-		format: 'binary',
-		url: `${SITE_RULE_SET_BASE_URL}geosite-geolocation-!cn.srs`,
-	});
-  }
-
-  if(customRules){
-	customRules.forEach(rule => {
-		if(rule.site!=''){
-			rule.site.split(',').forEach(site => {
-				site_rule_sets.push({
-					tag: site.trim(),
-					type: 'remote',
-					format: 'binary',
-					url: `${SITE_RULE_SET_BASE_URL}geosite-${site.trim()}.srs`,
-				});
-			});
-		}
-		if(rule.ip!=''){
-			rule.ip.split(',').forEach(ip => {
-				ip_rule_sets.push({
-					tag: `${ip.trim()}-ip`,
-					type: 'remote',
-					format: 'binary',
-					url: `${IP_RULE_SET_BASE_URL}geoip-${ip.trim()}.srs`,
-				});
-			});
-		}
-	});
+	if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
+		selectedRules = PREDEFINED_RULE_SETS[selectedRules];
 	}
 
-  ruleSets.push(...site_rule_sets, ...ip_rule_sets);
+	if (!selectedRules || selectedRules.length === 0) {
+		selectedRules = PREDEFINED_RULE_SETS.minimal;
+	}
 
-  return { site_rule_sets, ip_rule_sets };
+	const selectedRulesSet = new Set(selectedRules);
+
+	const siteRuleSets = new Set();
+	const ipRuleSets = new Set();
+
+	const ruleSets = [];
+
+	UNIFIED_RULES.forEach(rule => {
+		if (selectedRulesSet.has(rule.name)) {
+			rule.site_rules.forEach(siteRule => siteRuleSets.add(siteRule));
+			rule.ip_rules.forEach(ipRule => ipRuleSets.add(ipRule));
+		}
+	});
+
+
+
+	const site_rule_sets = Array.from(siteRuleSets).map(rule => ({
+		tag: rule,
+		type: 'remote',
+		format: 'binary',
+		url: `${SITE_RULE_SET_BASE_URL}${SITE_RULE_SETS[rule]}`,
+	}));
+
+	const ip_rule_sets = Array.from(ipRuleSets).map(rule => ({
+		tag: `${rule}-ip`,
+		type: 'remote',
+		format: 'binary',
+		url: `${IP_RULE_SET_BASE_URL}${IP_RULE_SETS[rule]}`,
+	}));
+
+	if (!selectedRules.includes('Non-China')) {
+		site_rule_sets.push({
+			tag: 'geolocation-!cn',
+			type: 'remote',
+			format: 'binary',
+			url: `${SITE_RULE_SET_BASE_URL}geosite-geolocation-!cn.srs`,
+		});
+	}
+
+	if (customRules) {
+		customRules.forEach(rule => {
+			if (rule.site != '') {
+				rule.site.split(',').forEach(site => {
+					site_rule_sets.push({
+						tag: site.trim(),
+						type: 'remote',
+						format: 'binary',
+						url: `${SITE_RULE_SET_BASE_URL}geosite-${site.trim()}.srs`,
+					});
+				});
+			}
+			if (rule.ip != '') {
+				rule.ip.split(',').forEach(ip => {
+					ip_rule_sets.push({
+						tag: `${ip.trim()}-ip`,
+						type: 'remote',
+						format: 'binary',
+						url: `${IP_RULE_SET_BASE_URL}geoip-${ip.trim()}.srs`,
+					});
+				});
+			}
+		});
+	}
+
+	ruleSets.push(...site_rule_sets, ...ip_rule_sets);
+
+	return { site_rule_sets, ip_rule_sets };
 }
 
 // Generate rule sets for Clash using .mrs format
 export function generateClashRuleSets(selectedRules = [], customRules = []) {
-  if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
-    selectedRules = PREDEFINED_RULE_SETS[selectedRules];
-  }
-  
-  if (!selectedRules || selectedRules.length === 0) {
-    selectedRules = PREDEFINED_RULE_SETS.minimal;
-  }
+	if (typeof selectedRules === 'string' && PREDEFINED_RULE_SETS[selectedRules]) {
+		selectedRules = PREDEFINED_RULE_SETS[selectedRules];
+	}
 
-  const selectedRulesSet = new Set(selectedRules);
+	if (!selectedRules || selectedRules.length === 0) {
+		selectedRules = PREDEFINED_RULE_SETS.minimal;
+	}
 
-  const siteRuleSets = new Set();
-  const ipRuleSets = new Set();
+	const selectedRulesSet = new Set(selectedRules);
 
-  UNIFIED_RULES.forEach(rule => {
-    if (selectedRulesSet.has(rule.name)) {
-      rule.site_rules.forEach(siteRule => siteRuleSets.add(siteRule));
-      rule.ip_rules.forEach(ipRule => ipRuleSets.add(ipRule));
-    }
-  });
+	const siteRuleSets = new Set();
+	const ipRuleSets = new Set();
 
-  const site_rule_providers = {};
-  const ip_rule_providers = {};
+	UNIFIED_RULES.forEach(rule => {
+		if (selectedRulesSet.has(rule.name)) {
+			rule.site_rules.forEach(siteRule => siteRuleSets.add(siteRule));
+			rule.ip_rules.forEach(ipRule => ipRuleSets.add(ipRule));
+		}
+	});
 
-  Array.from(siteRuleSets).forEach(rule => {
-    site_rule_providers[rule] = {
-      type: 'http',
-      format: 'mrs',
-      behavior: 'domain',
-      url: `${CLASH_SITE_RULE_SET_BASE_URL}${CLASH_SITE_RULE_SETS[rule]}`,
-      path: `./ruleset/${CLASH_SITE_RULE_SETS[rule]}`,
-      interval: 86400
-    };
-  });
+	const site_rule_providers = {};
+	const ip_rule_providers = {};
 
-  Array.from(ipRuleSets).forEach(rule => {
-    ip_rule_providers[rule] = {
-      type: 'http',
-      format: 'mrs',
-      behavior: 'ipcidr',
-      url: `${CLASH_IP_RULE_SET_BASE_URL}${CLASH_IP_RULE_SETS[rule]}`,
-      path: `./ruleset/${CLASH_IP_RULE_SETS[rule]}`,
-      interval: 86400
-    };
-  });
+	Array.from(siteRuleSets).forEach(rule => {
+		site_rule_providers[rule] = {
+			type: 'http',
+			format: 'mrs',
+			behavior: 'domain',
+			url: `${CLASH_SITE_RULE_SET_BASE_URL}${CLASH_SITE_RULE_SETS[rule]}`,
+			path: `./ruleset/${CLASH_SITE_RULE_SETS[rule]}`,
+			interval: 86400
+		};
+	});
 
-  // Add Non-China rule set if not included
-  if(!selectedRules.includes('Non-China')){
-    site_rule_providers['geolocation-!cn'] = {
-      type: 'http',
-      format: 'mrs',
-      behavior: 'domain',
-      url: `${CLASH_SITE_RULE_SET_BASE_URL}geolocation-!cn.mrs`,
-      path: './ruleset/geolocation-!cn.mrs',
-      interval: 86400
-    };
-  }
+	Array.from(ipRuleSets).forEach(rule => {
+		ip_rule_providers[rule] = {
+			type: 'http',
+			format: 'mrs',
+			behavior: 'ipcidr',
+			url: `${CLASH_IP_RULE_SET_BASE_URL}${CLASH_IP_RULE_SETS[rule]}`,
+			path: `./ruleset/${CLASH_IP_RULE_SETS[rule]}`,
+			interval: 86400
+		};
+	});
 
-  // Add custom rules
-  if(customRules){
-    customRules.forEach(rule => {
-      if(rule.site!=''){
-        rule.site.split(',').forEach(site => {
-          const site_trimmed = site.trim();
-          site_rule_providers[site_trimmed] = {
-            type: 'http',
-            format: 'mrs',
-            behavior: 'domain',
-            url: `${CLASH_SITE_RULE_SET_BASE_URL}${site_trimmed}.mrs`,
-            path: `./ruleset/${site_trimmed}.mrs`,
-            interval: 86400
-          };
-        });
-      }
-      if(rule.ip!=''){
-        rule.ip.split(',').forEach(ip => {
-          const ip_trimmed = ip.trim();
-          ip_rule_providers[ip_trimmed] = {
-            type: 'http',
-            format: 'mrs',
-            behavior: 'ipcidr',
-            url: `${CLASH_IP_RULE_SET_BASE_URL}${ip_trimmed}.mrs`,
-            path: `./ruleset/${ip_trimmed}.mrs`,
-            interval: 86400
-          };
-        });
-      }
-    });
-  }
+	// Add Non-China rule set if not included
+	if (!selectedRules.includes('Non-China')) {
+		site_rule_providers['geolocation-!cn'] = {
+			type: 'http',
+			format: 'mrs',
+			behavior: 'domain',
+			url: `${CLASH_SITE_RULE_SET_BASE_URL}geolocation-!cn.mrs`,
+			path: './ruleset/geolocation-!cn.mrs',
+			interval: 86400
+		};
+	}
 
-  return { site_rule_providers, ip_rule_providers };
+	// Add custom rules
+	if (customRules) {
+		customRules.forEach(rule => {
+			if (rule.site != '') {
+				rule.site.split(',').forEach(site => {
+					const site_trimmed = site.trim();
+					site_rule_providers[site_trimmed] = {
+						type: 'http',
+						format: 'mrs',
+						behavior: 'domain',
+						url: `${CLASH_SITE_RULE_SET_BASE_URL}${site_trimmed}.mrs`,
+						path: `./ruleset/${site_trimmed}.mrs`,
+						interval: 86400
+					};
+				});
+			}
+			if (rule.ip != '') {
+				rule.ip.split(',').forEach(ip => {
+					const ip_trimmed = ip.trim();
+					ip_rule_providers[ip_trimmed] = {
+						type: 'http',
+						format: 'mrs',
+						behavior: 'ipcidr',
+						url: `${CLASH_IP_RULE_SET_BASE_URL}${ip_trimmed}.mrs`,
+						path: `./ruleset/${ip_trimmed}.mrs`,
+						interval: 86400
+					};
+				});
+			}
+		});
+	}
+
+	return { site_rule_providers, ip_rule_providers };
 }
 
 // Singbox configuration
@@ -391,7 +391,7 @@ export const SING_BOX_CONFIG = {
 				detour: "🚀 节点选择"
 			},
 			{
-				tag: "dns_direct", 
+				tag: "dns_direct",
 				address: "https://dns.alidns.com/dns-query",
 				address_resolver: "dns_resolver",
 				strategy: "ipv4_only",
@@ -462,22 +462,22 @@ export const SING_BOX_CONFIG = {
 		detour: 'DIRECT'
 	},
 	inbounds: [
-		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
+		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 10808 },
+		{ type: 'tun', tag: 'tun-in', address: '172.10.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
 	],
 	outbounds: [
 		{ type: 'direct', tag: 'DIRECT' },
 		{ type: 'block', tag: 'REJECT' },
 		{ type: 'dns', tag: 'dns-out' }
 	],
-	route : {
+	route: {
 		"rule_set": [
-            {
-                "tag": "geosite-geolocation-!cn",
-                "type": "local",
-                "format": "binary",
-                "path": "geosite-geolocation-!cn.srs"
-            }
+			{
+				"tag": "geosite-geolocation-!cn",
+				"type": "local",
+				"format": "binary",
+				"path": "geosite-geolocation-!cn.srs"
+			}
 		],
 		rules: [
 			{
@@ -490,53 +490,59 @@ export const SING_BOX_CONFIG = {
 		cache_file: {
 			enabled: true,
 			store_fakeip: true
+		},
+		"clash_api": {
+			"external_controller": "0.0.0.0:9090",
+			"external_ui": "yacd",
+			"secret": "herowuking.singbox",
+			"default_mode": "rule"
 		}
 	}
 };
 
 export const CLASH_CONFIG = {
-    'port': 7890,
-    'socks-port': 7891,
-    'allow-lan': false,
-    'mode': 'rule',
-    'log-level': 'info',
-    'geodata-mode': true,
-    'geo-auto-update': true,
-    'geodata-loader': 'standard',
-    'geo-update-interval': 24,
-    'geox-url': {
-      'geoip': "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat",
-      'geosite': "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat",
-      'mmdb': "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb",
-      'asn': "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb"
-    },
-    'rule-providers': {
-      // 将由代码自动生成
-    },
-    'dns': {
-        'enable': true,
-        'ipv6': true,
-        'respect-rules': true,
-        'enhanced-mode': 'fake-ip',
-        'nameserver': [
-            'https://120.53.53.53/dns-query',
-            'https://223.5.5.5/dns-query'
-        ],
-        'proxy-server-nameserver': [
-            'https://120.53.53.53/dns-query',
-            'https://223.5.5.5/dns-query'
-        ],
-        'nameserver-policy': {
-            'geosite:cn,private': [
-                'https://120.53.53.53/dns-query',
-                'https://223.5.5.5/dns-query'
-            ],
-            'geosite:geolocation-!cn': [
-                'https://dns.cloudflare.com/dns-query',
-                'https://dns.google/dns-query'
-            ]
-        }
-    },
-    'proxies': [],
-    'proxy-groups': []
+	'port': 7890,
+	'socks-port': 7891,
+	'allow-lan': false,
+	'mode': 'rule',
+	'log-level': 'info',
+	'geodata-mode': true,
+	'geo-auto-update': true,
+	'geodata-loader': 'standard',
+	'geo-update-interval': 24,
+	'geox-url': {
+		'geoip': "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat",
+		'geosite': "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat",
+		'mmdb': "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb",
+		'asn': "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb"
+	},
+	'rule-providers': {
+		// 将由代码自动生成
+	},
+	'dns': {
+		'enable': true,
+		'ipv6': true,
+		'respect-rules': true,
+		'enhanced-mode': 'fake-ip',
+		'nameserver': [
+			'https://120.53.53.53/dns-query',
+			'https://223.5.5.5/dns-query'
+		],
+		'proxy-server-nameserver': [
+			'https://120.53.53.53/dns-query',
+			'https://223.5.5.5/dns-query'
+		],
+		'nameserver-policy': {
+			'geosite:cn,private': [
+				'https://120.53.53.53/dns-query',
+				'https://223.5.5.5/dns-query'
+			],
+			'geosite:geolocation-!cn': [
+				'https://dns.cloudflare.com/dns-query',
+				'https://dns.google/dns-query'
+			]
+		}
+	},
+	'proxies': [],
+	'proxy-groups': []
 };
