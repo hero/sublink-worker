@@ -104,7 +104,7 @@ curl -X POST https://your-worker-domain.workers.dev/config \
 -H "Content-Type: application/json" \
 -d '{
 "type": "clash",
-"content": "port: 7890\nallow-lan: false\nmode: Rule"
+"content": "port: 10808\nallow-lan: false\nmode: Rule"
 }'
 ```
 

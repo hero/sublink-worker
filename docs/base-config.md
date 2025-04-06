@@ -125,8 +125,8 @@
 ### Clash 默认配置
 
 ```yaml
-port: 7890
-socks-port: 7891
+port: 10808
+socks-port: 10807
 allow-lan: false
 mode: Rule
 log-level: info

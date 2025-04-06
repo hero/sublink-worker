@@ -52,9 +52,11 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
+                const outboundName = `outboundNames.${outbound}`;
+                const type = outboundName.includes('Location') || outboundName.includes('Private') ? 'direct' : 'selector';
                 this.config.outbounds.push({
-                    type: "selector",
-                    tag: t(`outboundNames.${outbound}`),
+                    type,
+                    tag: t(outboundName),
                     outbounds: [t('outboundNames.Node Select'), ...proxyList]
                 });
             }

@@ -1,9 +1,9 @@
 import { t } from './i18n';
 
-export const SITE_RULE_SET_BASE_URL = 'https://gh.sageer.me/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geosite/';
-export const IP_RULE_SET_BASE_URL = 'https://gh.sageer.me/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geoip/';
-export const CLASH_SITE_RULE_SET_BASE_URL = 'https://gh.sageer.me/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/';
-export const CLASH_IP_RULE_SET_BASE_URL = 'https://gh.sageer.me/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geoip/';
+export const SITE_RULE_SET_BASE_URL = 'https://gh.jls.pp.ua/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geosite/';
+export const IP_RULE_SET_BASE_URL = 'https://gh.jls.pp.ua/https://raw.githubusercontent.com/lyc8503/sing-box-rules/refs/heads/rule-set-geoip/';
+export const CLASH_SITE_RULE_SET_BASE_URL = 'https://gh.jls.pp.ua/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/';
+export const CLASH_IP_RULE_SET_BASE_URL = 'https://gh.jls.pp.ua/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geoip/';
 // Custom rules
 export const CUSTOM_RULES = [];
 // Unified rule structure
@@ -501,8 +501,8 @@ export const SING_BOX_CONFIG = {
 };
 
 export const CLASH_CONFIG = {
-	'port': 7890,
-	'socks-port': 7891,
+	'port': 10808,
+	'socks-port': 10807,
 	'allow-lan': false,
 	'mode': 'rule',
 	'log-level': 'info',
