@@ -130,6 +130,10 @@ export class BaseConfigBuilder {
         throw new Error('addAutoSelectGroup must be implemented in child class');
     }
 
+    addHysteriaAutoSelectGroup(proxyList) {
+        throw new Error('addHysteriaAutoSelectGroup must be implemented in child class');
+    }
+
     addNodeSelectGroup(proxyList) {
         throw new Error('addNodeSelectGroup must be implemented in child class');
     }
@@ -163,6 +167,7 @@ export class BaseConfigBuilder {
         const proxyList = this.getProxyList();
 
         this.addAutoSelectGroup(proxyList);
+        this.addHysteriaAutoSelectGroup(proxyList);
         this.addNodeSelectGroup(proxyList);
         this.addOutboundGroups(outbounds, proxyList);
         this.addCustomRuleGroups(proxyList);

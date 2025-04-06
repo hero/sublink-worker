@@ -55,7 +55,8 @@ const translations = {
     // 规则名称和出站名称的翻译
     outboundNames: {
       'Auto Select': '⚡ 自动选择',
-      'Node Select': '🚀 节点选择',
+      'Hysteria': '🚀 歇斯底里',
+      'Node Select': '✅ 节点选择',
       'Fall Back': '🐟 漏网之鱼',
       'Ad Block': '🛑 广告拦截',
       'AI Services': '💬 AI 服务',
@@ -133,7 +134,8 @@ const translations = {
     removeCustomRule: 'Remove',
     outboundNames:{
       'Auto Select': '⚡ Auto Select',
-      'Node Select': '🚀 Node Select',
+      'Hysteria': '🚀 Auto Hysteria',
+      'Node Select': '✅ Node Select',
       'Fall Back': '🐟 Fall Back',
       'Ad Block': '🛑 Ad Blocking',
       'AI Services': '💬 AI Services',
@@ -211,7 +213,8 @@ const translations = {
     removeCustomRule: 'حذف',
     outboundNames: {
       'Auto Select': '⚡ انتخاب خودکار',
-      'Node Select': '🚀 انتخاب نود',
+      'Hysteria': '🚀 هیستری',
+      'Node Select': '✅ انتخاب نود',
       'Fall Back': '🐟 فال بک',
       'Ad Block': '🛑 مسدودسازی تبلیغات',
       'AI Services': '💬 سرویس‌های هوش مصنوعی',

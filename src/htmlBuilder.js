@@ -424,6 +424,14 @@ const applyPredefinedRulesFunction = () => `
     });
 
     if (predefinedRules === 'custom') {
+      // 如果是自定义模式，尝试从 localStorage 恢复选中状态
+      const savedRules = JSON.parse(localStorage.getItem('selectedRules') || '[]');
+      savedRules.forEach(rule => {
+        const checkbox = document.getElementById(rule);
+        if (checkbox) {
+          checkbox.checked = true;
+        }
+      });
       return;
     }
 
@@ -435,17 +443,48 @@ const applyPredefinedRulesFunction = () => `
         checkbox.checked = true;
       }
     });
+
+    // 保存当前选择到 localStorage
+    localStorage.setItem('selectedRules', JSON.stringify(rulesToApply[predefinedRules]));
   }
 
   // Add event listeners to checkboxes
   document.addEventListener('DOMContentLoaded', function() {
     const checkboxes = document.querySelectorAll('.rule-checkbox');
+    
+    // 从 localStorage 恢复上次的选择
+    const savedPredefinedRule = localStorage.getItem('predefinedRule');
+    if (savedPredefinedRule) {
+      document.getElementById('predefinedRules').value = savedPredefinedRule;
+      applyPredefinedRules();
+    } else {
+      // 如果没有预设规则，尝试恢复自定义选择
+      const savedRules = JSON.parse(localStorage.getItem('selectedRules') || '[]');
+      savedRules.forEach(rule => {
+        const checkbox = document.getElementById(rule);
+        if (checkbox) {
+          checkbox.checked = true;
+        }
+      });
+    }
+
+    // 监听规则集变化
+    document.getElementById('predefinedRules').addEventListener('change', function() {
+      localStorage.setItem('predefinedRule', this.value);
+    });
+
+    // 监听复选框变化
     checkboxes.forEach(checkbox => {
       checkbox.addEventListener('change', function() {
         const predefinedSelect = document.getElementById('predefinedRules');
         if (predefinedSelect.value !== 'custom') {
           predefinedSelect.value = 'custom';
+          localStorage.removeItem('predefinedRule');
         }
+        // 保存自定义选择
+        const selectedRules = Array.from(document.querySelectorAll('.rule-checkbox:checked'))
+          .map(cb => cb.value);
+        localStorage.setItem('selectedRules', JSON.stringify(selectedRules));
       });
     });
   });

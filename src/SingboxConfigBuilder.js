@@ -20,6 +20,10 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         return this.config.outbounds.filter(outbound => outbound?.server != undefined);
     }
 
+    getHy2Proxies() {
+        return this.getProxies().filter(proxy => proxy.type === 'hysteria2');
+    }
+
     getProxyName(proxy) {
         return proxy.tag;
     }
@@ -40,8 +44,32 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         });
     }
 
+    // 新增 Hysteria 自动过滤测速组
+    addHysteriaAutoSelectGroup(proxyList) {
+        // 使用 getHy2Proxies 获取 hysteria2 类型的节点
+        const hysteriaProxies = this.getHy2Proxies();
+        
+        // 只有当存在 hysteria2 节点时才添加分组
+        if (hysteriaProxies.length > 0) {
+            this.config.outbounds.unshift({
+                type: "urltest",
+                tag: t('outboundNames.Hysteria'),
+                outbounds: hysteriaProxies.map(proxy => proxy.tag)
+            });           
+        }
+    }
+
     addNodeSelectGroup(proxyList) {
-        proxyList.unshift('DIRECT', 'REJECT', t('outboundNames.Auto Select'));
+        // 获取 hysteria2 节点，判断是否需要添加 Hysteria 组
+        const hysteriaProxies = this.getHy2Proxies();
+        const defaultOutbounds = ['DIRECT', 'REJECT', t('outboundNames.Auto Select')];
+        
+        // 只有存在 hysteria2 节点时才添加 Hysteria 组
+        if (hysteriaProxies.length > 0) {
+            defaultOutbounds.push(t('outboundNames.Hysteria'));
+        }
+        
+        proxyList.unshift(...defaultOutbounds);
         this.config.outbounds.unshift({
             type: "selector",
             tag: t('outboundNames.Node Select'),
@@ -53,12 +81,18 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
                 const outboundName = `outboundNames.${outbound}`;
-                const type = outboundName.includes('Location') || outboundName.includes('Private') ? 'direct' : 'selector';
-                this.config.outbounds.push({
+                const type = outboundName.includes('Location') || outboundName.includes('Private') ? 'direct' : 'selector';  
+                // 如果类型是direct，添加了outbounds属性则SingBox会报错, Clash Verge测试则可以
+                // 所以这里需要判断类型，如果是direct，则不添加outbounds属性
+                const outboundConfig = {
                     type,
                     tag: t(outboundName),
-                    outbounds: [t('outboundNames.Node Select'), ...proxyList]
-                });
+                };
+                // 如果类型不是direct，则添加outbounds属性
+                if (type !== 'direct') {
+                    outboundConfig.outbounds = [t('outboundNames.Node Select'), ...proxyList];
+                }
+                this.config.outbounds.push(outboundConfig);
             }
         });
     }
@@ -76,8 +110,9 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     addFallBackGroup(proxyList) {
+        // 漏网之鱼走`自动选择`
         this.config.outbounds.push({
-            type: "selector",
+            type: "urltest",
             tag: t('outboundNames.Fall Back'),
             outbounds: [t('outboundNames.Node Select'), ...proxyList]
         });

@@ -49,6 +49,10 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         return this.config.proxies || [];
     }
 
+    getHy2Proxies() {
+        return this.getProxies().filter(proxy => proxy.type === 'hysteria2');
+    }
+
     getProxyName(proxy) {
         return proxy.split('=')[0].trim();
     }
@@ -160,9 +164,33 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         );
     }
 
+    addHysteriaAutoSelectGroup(proxyList) {
+        // 使用 getHy2Proxies 获取 hysteria2 类型的节点
+        const hysteriaProxies = this.getHy2Proxies();
+        console.log(hysteriaProxies);
+        
+        if (hysteriaProxies.length > 0) {
+            this.config['proxy-groups'] = this.config['proxy-groups'] || [];
+            this.config['proxy-groups'].push(
+                this.createProxyGroup(
+                    t('outboundNames.Hysteria'), 
+                    'url-test', 
+                    hysteriaProxies.map(proxy => proxy.tag), 
+                    ', url=http://www.gstatic.com/generate_204, interval=300'
+                )
+            );
+        }
+    }
+
     addNodeSelectGroup(proxyList) {
+        // 获取 Hysteria 节点
+        const hysteriaProxies = this.getHy2Proxies();
+        
+        // 根据是否有 Hysteria 节点来决定添加的选项
+        const additionalOptions = hysteriaProxies.length > 0 ? [t('outboundNames.Auto Select'), t('outboundNames.Hysteria')] : [t('outboundNames.Auto Select')];
+        
         this.config['proxy-groups'].push(
-            this.createProxyGroup(t('outboundNames.Node Select'), 'select', [t('outboundNames.Auto Select')])
+            this.createProxyGroup(t('outboundNames.Node Select'), 'select', additionalOptions)
         );
     }
 
