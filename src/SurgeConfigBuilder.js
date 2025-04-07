@@ -168,14 +168,14 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         // 使用 getHy2Proxies 获取 hysteria2 类型的节点
         const hysteriaProxies = this.getHy2Proxies();
         console.log(hysteriaProxies);
-        
+
         if (hysteriaProxies.length > 0) {
             this.config['proxy-groups'] = this.config['proxy-groups'] || [];
             this.config['proxy-groups'].push(
                 this.createProxyGroup(
-                    t('outboundNames.Hysteria'), 
-                    'url-test', 
-                    hysteriaProxies.map(proxy => proxy.tag), 
+                    t('outboundNames.Hysteria'),
+                    'select',
+                    hysteriaProxies.map(proxy => proxy.tag),
                     ', url=http://www.gstatic.com/generate_204, interval=300'
                 )
             );
@@ -185,10 +185,10 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     addNodeSelectGroup(proxyList) {
         // 获取 Hysteria 节点
         const hysteriaProxies = this.getHy2Proxies();
-        
+
         // 根据是否有 Hysteria 节点来决定添加的选项
         const additionalOptions = hysteriaProxies.length > 0 ? [t('outboundNames.Auto Select'), t('outboundNames.Hysteria')] : [t('outboundNames.Auto Select')];
-        
+
         this.config['proxy-groups'].push(
             this.createProxyGroup(t('outboundNames.Node Select'), 'select', additionalOptions)
         );
@@ -260,50 +260,50 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 rule.site_rules.forEach(site => {
                     switch (site.toLowerCase()) {
                         case 'cn':
-                            finalConfig.push(`DOMAIN-SUFFIX,cn,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,com.cn,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,edu.cn,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,gov.cn,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,cn,${t('outboundNames.' + rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,com.cn,${t('outboundNames.' + rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,edu.cn,${t('outboundNames.' + rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,gov.cn,${t('outboundNames.' + rule.outbound)}`);
                             break;
                         case 'google':
-                            finalConfig.push(`DOMAIN-SUFFIX,google.com,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,googleapis.com,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,googlevideo.com,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-KEYWORD,google,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,google.com,${t('outboundNames.' + rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,googleapis.com,${t('outboundNames.' + rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,googlevideo.com,${t('outboundNames.' + rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-KEYWORD,google,${t('outboundNames.' + rule.outbound)}`);
                             break;
                         case 'telegram':
-                            finalConfig.push(`DOMAIN-SUFFIX,telegram.org,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,telegram.me,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-SUFFIX,t.me,${t('outboundNames.'+ rule.outbound)}`);
-                            finalConfig.push(`DOMAIN-KEYWORD,telegram,${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,telegram.org,${t('outboundNames.' + rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,telegram.me,${t('outboundNames.' + rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-SUFFIX,t.me,${t('outboundNames.' + rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-KEYWORD,telegram,${t('outboundNames.' + rule.outbound)}`);
                             break;
                         default:
-                            finalConfig.push(`DOMAIN-KEYWORD,${site},${t('outboundNames.'+ rule.outbound)}`);
+                            finalConfig.push(`DOMAIN-KEYWORD,${site},${t('outboundNames.' + rule.outbound)}`);
                     }
                 });
             }
 
             if (rule.ip_rules[0] !== '') {
                 rule.ip_rules.forEach(ip => {
-                    finalConfig.push(`GEOIP,${ip},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+                    finalConfig.push(`GEOIP,${ip},${t('outboundNames.' + rule.outbound)},no-resolve`);
                 });
             }
 
             if (rule.domain_suffix) {
                 rule.domain_suffix.forEach(suffix => {
-                    finalConfig.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
+                    finalConfig.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.' + rule.outbound)}`);
                 });
             }
 
             if (rule.domain_keyword) {
                 rule.domain_keyword.forEach(keyword => {
-                    finalConfig.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
+                    finalConfig.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.' + rule.outbound)}`);
                 });
             }
 
             if (rule.ip_cidr) {
                 rule.ip_cidr.forEach(cidr => {
-                    finalConfig.push(`IP-CIDR,${cidr},${t('outboundNames.'+ rule.outbound)},no-resolve`);
+                    finalConfig.push(`IP-CIDR,${cidr},${t('outboundNames.' + rule.outbound)},no-resolve`);
                 });
             }
         });

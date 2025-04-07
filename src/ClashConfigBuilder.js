@@ -168,7 +168,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
             this.config['proxy-groups'] = this.config['proxy-groups'] || [];
             this.config['proxy-groups'].push({
                 name: t('outboundNames.Hysteria'),
-                type: 'url-test',
+                type: 'select',
                 proxies: hysteriaProxies.map(proxy => proxy.name),
                 url: 'https://www.gstatic.com/generate_204',
                 interval: 300,
@@ -181,18 +181,18 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         // 获取 hysteria2 节点，判断是否需要添加 Hysteria 组
         const hysteriaProxies = this.getHy2Proxies();
         const defaultOutbounds = ['DIRECT', 'REJECT', t('outboundNames.Auto Select')];
-        
+
         // 只有存在 hysteria2 节点时才添加 Hysteria 组
         if (hysteriaProxies.length > 0) {
             defaultOutbounds.push(t('outboundNames.Hysteria'));
         }
-        
+
         proxyList.unshift(...defaultOutbounds);
-        
+
         // 添加其它节点列表
         this.config['proxy-groups'].unshift({
-            type: "select",
             name: t('outboundNames.Node Select'),
+            type: "select",
             proxies: proxyList
         });
     }
@@ -201,8 +201,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
                 this.config['proxy-groups'].push({
-                    type: "select",
                     name: t(`outboundNames.${outbound}`),
+                    type: "select",
                     proxies: [t('outboundNames.Node Select'), ...proxyList]
                 });
             }
@@ -213,8 +213,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
                 this.config['proxy-groups'].push({
-                    type: "select",
                     name: t(`outboundNames.${rule.name}`),
+                    type: "select",
                     proxies: [t('outboundNames.Node Select'), ...proxyList]
                 });
             });
@@ -223,8 +223,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
     addFallBackGroup(proxyList) {
         this.config['proxy-groups'].push({
-            type: "select",
             name: t('outboundNames.Fall Back'),
+            type: "select",
             proxies: [t('outboundNames.Node Select'), ...proxyList]
         });
     }
