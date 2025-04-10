@@ -42,27 +42,38 @@
         "tag": "dns_block",
         "address": "rcode://success"
       }
-    ],
+    ], 
     "rules": [
-      {
-        "outbound": ["any"],
-        "server": "dns_resolver"
-      },
-      {
-        "geosite": ["category-ads-all"],
-        "server": "dns_block",
-        "disable_cache": true
-      },
-      {
-        "geosite": ["geolocation-!cn"],
-        "query_type": ["A", "AAAA"],
-        "server": "dns_fakeip"
-      },
-      {
-        "geosite": ["geolocation-!cn"],
-        "server": "dns_proxy"
-      }
-    ],
+			{
+				"outbound": "any",
+				"server": "dns_resolver"
+			},
+			{
+				"rule_set": "geolocation-!cn",
+				"query_type": [
+					"A",
+					"AAAA"
+				],
+				"server": "dns_fakeip"
+			},
+			{
+				"rule_set": "geolocation-!cn",
+				"query_type": [
+					"CNAME"
+				],
+				"server": "dns_proxy"
+			},
+			{
+				"query_type": [
+					"A",
+					"AAAA",
+					"CNAME"
+				],
+				"invert": true,
+				"server": "dns_refused",
+				"disable_cache": true
+			}
+		],
     "final": "dns_direct",
     "independent_cache": true,
     "fakeip": {
@@ -82,16 +93,25 @@
       "type": "mixed",
       "tag": "mixed-in",
       "listen": "0.0.0.0",
-      "listen_port": 2080
+      "listen_port": 10808
     },
     {
       "type": "tun",
       "tag": "tun-in", 
-      "inet4_address": "172.19.0.1/30",
-      "auto_route": true,
-      "strict_route": true,
-      "stack": "mixed",
-      "sniff": true
+      "address": [
+        "172.10.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "route_address": [
+        "0.0.0.0/1",
+        "128.0.0.0/1",
+        "::/1",
+        "8000::/1"
+      ],
+      "route_exclude_address": [
+        "192.168.0.0/16",
+        "fc00::/7"
+      ]
     }
   ],
   "outbounds": [
@@ -115,8 +135,10 @@
       "store_fakeip": true
     },
     "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "external_ui": "dashboard"
+      "external_controller": "0.0.0.0:9090",
+      "external_ui": "yacd",
+      "secret": "herowuking.singbox",
+      "default_mode": "rule"
     }
   }
 }

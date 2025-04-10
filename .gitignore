@@ -178,3 +178,4 @@ package-lock.json
 
 # 测试用文件
 webui/
+output/

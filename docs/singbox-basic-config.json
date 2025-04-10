@@ -1,0 +1,127 @@
+{
+  "dns": {
+    "servers": [
+      {
+        "tag": "dns_proxy",
+        "address": "tls://1.1.1.1",
+        "address_resolver": "dns_resolver"
+      },
+      {
+        "tag": "dns_direct",
+        "address": "h3://dns.alidns.com/dns-query",
+        "address_resolver": "dns_resolver",
+        "detour": "DIRECT"
+      },
+      {
+        "tag": "dns_fakeip",
+        "address": "fakeip"
+      },
+      {
+        "tag": "dns_resolver",
+        "address": "223.5.5.5",
+        "detour": "DIRECT"
+      },
+      {
+        "tag": "dns_block",
+        "address": "rcode://success"
+      }
+    ], 
+    "rules": [
+			{
+				"outbound": "any",
+				"server": "dns_resolver"
+			},
+			{
+				"rule_set": "geolocation-!cn",
+				"query_type": [
+					"A",
+					"AAAA"
+				],
+				"server": "dns_fakeip"
+			},
+			{
+				"rule_set": "geolocation-!cn",
+				"query_type": [
+					"CNAME"
+				],
+				"server": "dns_proxy"
+			},
+			{
+				"query_type": [
+					"A",
+					"AAAA",
+					"CNAME"
+				],
+				"invert": true,
+				"server": "dns_refused",
+				"disable_cache": true
+			}
+		],
+    "final": "dns_direct",
+    "independent_cache": true,
+    "fakeip": {
+      "enabled": true,
+      "inet4_range": "198.18.0.0/15"
+    }
+  },
+  "ntp": {
+    "enabled": true,
+    "server": "time.apple.com",
+    "server_port": 123,
+    "interval": "30m",
+    "detour": "DIRECT"
+  },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "0.0.0.0",
+      "listen_port": 10808
+    },
+    {
+      "type": "tun",
+      "tag": "tun-in", 
+      "address": [
+        "172.10.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "route_address": [
+        "0.0.0.0/1",
+        "128.0.0.0/1",
+        "::/1",
+        "8000::/1"
+      ],
+      "route_exclude_address": [
+        "192.168.0.0/16",
+        "fc00::/7"
+      ]
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "DIRECT"
+    },
+    {
+      "type": "block",
+      "tag": "REJECT"
+    },
+    {
+      "type": "dns",
+      "tag": "dns-out"
+    }
+  ],
+  "route": {},
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "store_fakeip": true
+    },
+    "clash_api": {
+      "external_controller": "0.0.0.0:9090",
+      "external_ui": "yacd",
+      "secret": "herowuking.singbox",
+      "default_mode": "rule"
+    }
+  }
+}
