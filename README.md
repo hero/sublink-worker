@@ -137,7 +137,234 @@ go build -v -trimpath -ldflags "-X 'github.com/sagernet/sing-box/constant.Versio
 -o sing-box.exe ./cmd/sing-box
 ```
 
+## 🛜TUN模式下内网域名的解析
 
+实验室采用Docker的方式部署了一个[SmartDNS](https://hub.docker.com/r/pymumu/smartdns)容器用于内网域名的解析，`smartdns.conf`文件内容：
+
+```ini
+# 监听53端口
+bind [::]:53
+
+# 局域网域名和IP映射
+address /ss.p7760.lan/192.168.3.200
+address /comfyui.p7760.lan/192.168.3.200
+
+address /ss.eda5k.lan/192.168.3.55
+address /sb.eda5k.lan/192.168.3.112
+address /fnos.eda5k.lan/192.168.3.112
+address /sync.eda5k.lan/192.168.3.112
+
+address /ss.eda007.lan/192.168.3.36
+address /sb.eda007.lan/192.168.3.113
+address /fnos.eda007.lan/192.168.3.113
+
+address /github.cigit.lan/192.168.3.112
+address /ca.cigit.lan/192.168.3.112
+address /traefik.cigit.lan/192.168.3.112
+address /ollama.cigit.lan/192.168.3.117
+
+# 上游DNS服务器
+server 8.8.8.8
+server 1.0.0.1
+server 1.2.4.8
+```
+
+如果采用默认配置，那么TUN模式下是无法访问内网域名的，用`tcpdump`观察流量发现是SingBox的TUN模式导致了错误解析。甚至不能叫错误解析，因为即使我设置了SmartDNS为主要DNS，在TUN模式下流量都被SingBox接管了，只要[DNS解析规则](https://github.com/SagerNet/sing-box/blob/v1.11.7/docs/configuration/dns/rule.zh.md)里面没有内网域名的解析方法，它都无法成功解析到。
+
+```bash
+# Tmux下开2个窗口分别执行下面的命令查看
+sudo tcpdump -i any port 53 and host 192.168.3.53
+nslookup github.cigit.lan
+```
+
+解决方案–自定义SingBox配置：
+
+```json
+{
+  "dns": {
+    "servers": [
+      {
+        "tag": "dns_proxy",
+        "address": "tcp://1.1.1.1",
+        "address_resolver": "dns_resolver",
+        "strategy": "ipv4_only",
+        "detour": "✅ 节点选择"
+      },
+      {
+        "tag": "dns_direct",
+        "address": "https://dns.alidns.com/dns-query",
+        "address_resolver": "dns_resolver",
+        "strategy": "ipv4_only",
+        "detour": "DIRECT"
+      },
+      {
+        "tag": "dns_local",
+        "address": "192.168.3.53",
+        "detour": "DIRECT"
+      },
+      {
+        "tag": "dns_resolver",
+        "address": "223.5.5.5",
+        "detour": "DIRECT"
+      },
+      {
+        "tag": "dns_success",
+        "address": "rcode://success"
+      },
+      {
+        "tag": "dns_refused",
+        "address": "rcode://refused"
+      },
+      {
+        "tag": "dns_fakeip",
+        "address": "fakeip"
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "any",
+        "server": "dns_resolver"
+      },
+      {
+        "domain_suffix": [
+          ".internal",
+          ".local",
+          ".lan"
+        ],
+        "server": "dns_local"
+      },
+      {
+        "rule_set": "geolocation-!cn",
+        "query_type": [
+          "A",
+          "AAAA"
+        ],
+        "server": "dns_fakeip"
+      },
+      {
+        "rule_set": "geolocation-!cn",
+        "query_type": [
+          "CNAME"
+        ],
+        "server": "dns_proxy"
+      },
+      {
+        "query_type": [
+          "A",
+          "AAAA",
+          "CNAME"
+        ],
+        "invert": true,
+        "server": "dns_refused",
+        "disable_cache": true
+      }
+    ],
+    "final": "dns_direct",
+    "independent_cache": true,
+    "fakeip": {
+      "enabled": true,
+      "inet4_range": "198.18.0.0/15",
+      "inet6_range": "fc00::/18"
+    }
+  },
+  "ntp": {
+    "enabled": true,
+    "server": "time.apple.com",
+    "server_port": 123,
+    "interval": "30m",
+    "detour": "DIRECT"
+  },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "0.0.0.0",
+      "listen_port": 10808
+    },
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "address": [
+        "172.10.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "route_address": [
+        "0.0.0.0/1",
+        "128.0.0.0/1",
+        "::/1",
+        "8000::/1"
+      ],
+      "route_exclude_address": [
+        "192.168.0.0/16",
+        "fc00::/7"
+      ]
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "DIRECT"
+    },
+    {
+      "type": "block",
+      "tag": "REJECT"
+    },
+    {
+      "type": "dns",
+      "tag": "dns-out"
+    }
+  ],
+  "route": {},
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "store_fakeip": true
+    },
+    "clash_api": {
+      "external_controller": "0.0.0.0:9090",
+      "external_ui": "yacd",
+      "secret": "herowuking.singbox",
+      "default_mode": "rule"
+    }
+  }
+}
+```
+
+在DNS服务器列表里面新增了局域网SmartDNS：
+
+```json
+"dns": {
+    "servers": [
+			// ...
+      // 新增的 dns_local 就是局域网SmartDNS的地址
+      {
+        "tag": "dns_local",
+        "address": "192.168.3.53",
+        "detour": "DIRECT"
+      },
+			// ...
+```
+
+另外，在DNS规则里面增加一个根据域名后缀判断的解析分流规则：
+
+```json
+"dns": {
+  	 // ...
+    "rules": [      
+      // ...
+      // 新增的DNS解析分流规则
+      {
+        "domain_suffix": [
+          ".internal",
+          ".local",
+          ".lan"
+        ],
+        "server": "dns_local"
+      },
+			// ...
+```
+
+至此，问题完美解决了💯
 
 ## 🤝 贡献
 

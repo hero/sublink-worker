@@ -51,6 +51,8 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     // 新增 Hysteria 自动过滤测速组
+    // 需要注意的是: 如果设置为了urltest，则无法使用Web UI进行手工选择
+    // Clash API 仅支持 selector 类型节点组的手工切换节点操作
     addHysteriaAutoSelectGroup(proxyList) {
         // 使用 getHy2Proxies 获取 hysteria2 类型的节点
         const hysteriaProxies = this.getHy2Proxies();
@@ -59,7 +61,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         if (hysteriaProxies.length > 0) {
             this.config.outbounds.unshift({
                 tag: t('outboundNames.Hysteria'),
-                type: "selector",
+                type: "urltest",
                 outbounds: hysteriaProxies.map(proxy => proxy.tag)
             });
         }
