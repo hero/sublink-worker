@@ -107,6 +107,24 @@ const generateForm = () => `
         <div class="mb-3">
           <textarea class="form-control" id="configEditor" rows="3" placeholder="Paste your custom config here..."></textarea>
         </div>
+        <div class="mb-3">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="enableFakeIP">
+            <label class="form-check-label" for="enableFakeIP">${t('enableFakeIP')}</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="enableTun" checked>
+            <label class="form-check-label" for="enableTun">${t('enableTun')}</label>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="input-group">
+            <span class="input-group-text">${t('secret')}</span>
+            <input type="text" class="form-control" id="customSecret" placeholder="${t('secretPlaceholder')}">
+            <span class="input-group-text">${t('listenPort')}</span>
+            <input type="number" class="form-control" id="listenPort" placeholder="10808" min="1" max="65535">
+          </div>
+        </div>
         <div class="d-flex gap-2">
           <button type="button" class="btn btn-secondary" onclick="saveConfig()">${t('saveConfig')}</button>
           <button type="button" class="btn btn-outline-danger" onclick="clearConfig()">
@@ -517,10 +535,18 @@ const submitFormFunction = () => `
     const inputString = formData.get('input');
 
     const userAgent = document.getElementById('customUA').value;
+    const enableFakeIP = document.getElementById('enableFakeIP').checked;
+    const enableTun = document.getElementById('enableTun').checked;
+    const customSecret = document.getElementById('customSecret').value;
+    const listenPort = document.getElementById('listenPort').value || '10808';
     
     // Save form data to localStorage
     localStorage.setItem('inputTextarea', inputString);
     localStorage.setItem('advancedToggle', document.getElementById('advancedToggle').checked);
+    localStorage.setItem('enableFakeIP', enableFakeIP);
+    localStorage.setItem('enableTun', enableTun);
+    localStorage.setItem('customSecret', customSecret);
+    localStorage.setItem('listenPort', listenPort);
 
     // Save UserAgent data to localStorage
     localStorage.setItem('userAgent', document.getElementById('customUA').value);
@@ -553,8 +579,8 @@ const submitFormFunction = () => `
 
     const configParam = configId ? \`&configId=\${configId}\` : '';
     const xrayUrl = \`\${window.location.origin}/xray?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}\${configParam}\`;
-    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
-    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
+    const singboxUrl = \`\${window.location.origin}/singbox?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&enableFakeIP=\${enableFakeIP}&enableTun=\${enableTun}&customSecret=\${encodeURIComponent(customSecret)}&listenPort=\${listenPort}\${configParam}\`;
+    const clashUrl = \`\${window.location.origin}/clash?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}&enableFakeIP=\${enableFakeIP}&enableTun=\${enableTun}&customSecret=\${encodeURIComponent(customSecret)}&listenPort=\${listenPort}\${configParam}\`;
     const surgeUrl = \`\${window.location.origin}/surge?config=\${encodeURIComponent(inputString)}&ua=\${encodeURIComponent(userAgent)}&selectedRules=\${encodeURIComponent(JSON.stringify(selectedRules))}&customRules=\${encodeURIComponent(JSON.stringify(customRules))}\${configParam}\`;
     document.getElementById('xrayLink').value = xrayUrl;
     document.getElementById('singboxLink').value = singboxUrl;
@@ -592,12 +618,28 @@ const submitFormFunction = () => `
     // 加载 configEditor 和 configType
     const savedConfig = localStorage.getItem('configEditor');
     const savedConfigType = localStorage.getItem('configType');
+    const savedEnableFakeIP = localStorage.getItem('enableFakeIP');
+    const savedEnableTun = localStorage.getItem('enableTun');
+    const savedCustomSecret = localStorage.getItem('customSecret');
+    const savedListenPort = localStorage.getItem('listenPort');
     
     if (savedConfig) {
       document.getElementById('configEditor').value = savedConfig;
     }
     if (savedConfigType) {
       document.getElementById('configType').value = savedConfigType;
+    }
+    if (savedEnableFakeIP !== null) {
+      document.getElementById('enableFakeIP').checked = savedEnableFakeIP === 'true';
+    }
+    if (savedEnableTun !== null) {
+      document.getElementById('enableTun').checked = savedEnableTun === 'true';
+    }
+    if (savedCustomSecret) {
+      document.getElementById('customSecret').value = savedCustomSecret;
+    }
+    if (savedListenPort) {
+      document.getElementById('listenPort').value = savedListenPort;
     }
     
     const savedCustomPath = localStorage.getItem('customPath');
@@ -811,9 +853,17 @@ const saveConfig = () => `
     const configEditor = document.getElementById('configEditor');
     const configType = document.getElementById('configType').value;
     const config = configEditor.value;
+    const enableFakeIP = document.getElementById('enableFakeIP').checked;
+    const enableTun = document.getElementById('enableTun').checked;
+    const customSecret = document.getElementById('customSecret').value;
+    const listenPort = document.getElementById('listenPort').value || '10808';
 
     localStorage.setItem('configEditor', config);
     localStorage.setItem('configType', configType);
+    localStorage.setItem('enableFakeIP', enableFakeIP);
+    localStorage.setItem('enableTun', enableTun);
+    localStorage.setItem('customSecret', customSecret);
+    localStorage.setItem('listenPort', listenPort);
     
     fetch('/config?type=' + configType, {
       method: 'POST',
@@ -827,7 +877,7 @@ const saveConfig = () => `
     })
     .then(response => {
       if (!response.ok) {
-        throw new Error('Failed to save configuration');
+        throw new Error('${t("saveConfigError")}');
       }
       return response.text();
     })
@@ -835,20 +885,50 @@ const saveConfig = () => `
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('configId', configId);
       window.history.pushState({}, '', currentUrl);
-      alert('Configuration saved successfully!');
+      showToast('${t("saveConfigSuccess")}', 'success');
     })
     .catch(error => {
-      alert('Error: ' + error.message);
+      showToast('${t("error")}: ' + error.message, 'error');
     });
+  }
+
+  function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-' + type;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // 触发动画
+    setTimeout(() => {
+      toast.classList.add('show');
+    }, 10);
+    
+    // 3秒后自动消失
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.addEventListener('transitionend', () => {
+        document.body.removeChild(toast);
+      }, { once: true });
+    }, 3000);
   }
 `;
 
 const clearConfig = () => `
   function clearConfig() {
     document.getElementById('configEditor').value = '';
+    document.getElementById('enableFakeIP').checked = false;
+    document.getElementById('enableTun').checked = true;
+    document.getElementById('customSecret').value = '';
+    document.getElementById('listenPort').value = '10808';
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.delete('configId');
     window.history.pushState({}, '', currentUrl);
     localStorage.removeItem('configEditor');
+    localStorage.removeItem('enableFakeIP');
+    localStorage.removeItem('enableTun');
+    localStorage.removeItem('customSecret');
+    localStorage.removeItem('listenPort');
+    showToast('${t("clearConfig")} ${t("saveConfigSuccess")}', 'info');
   }
 `;

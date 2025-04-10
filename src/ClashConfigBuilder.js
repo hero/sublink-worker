@@ -5,13 +5,19 @@ import { DeepCopy } from './utils.js';
 import { t } from './i18n/index.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, options = {}) {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG;
         }
         super(inputString, baseConfig, lang, userAgent);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
+        this.options = {
+            enableFakeIP: options.enableFakeIP || false,
+            enableTun: options.enableTun !== false, // 默认为true
+            customSecret: options.customSecret || 'herowuking.singbox',
+            listenPort: options.listenPort || '10808'
+        };
     }
 
     getProxies() {
@@ -274,6 +280,68 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         });
 
         this.config.rules.push(`MATCH,${t('outboundNames.Fall Back')}`);
+
+        // 处理FakeIP选项
+        if (this.config.dns) {
+            // 设置fakeip配置
+            this.config.dns.fakeip = {
+                enabled: this.options.enableFakeIP,
+                inet4_range: "198.18.0.0/15"
+            };
+            
+            // 删除原有的enhanced-mode并添加正确格式的enhanced-mode
+            delete this.config.dns['enhanced-mode']; // 删除原有的带横杠的格式
+            
+            // 根据FakeIP开启状态设置enhanced-mode
+            this.config.dns.enhanced_mode = this.options.enableFakeIP ? 'fake-ip' : 'redir-host';
+            
+            if (this.config.experimental?.cache_file) {
+                this.config.experimental.cache_file.store_fakeip = this.options.enableFakeIP;
+            }
+            
+            // 如果禁用了FakeIP，移除dns_fakeip相关服务器和规则
+            if (!this.options.enableFakeIP) {
+                if (this.config.dns.servers) {
+                    this.config.dns.servers = this.config.dns.servers.filter(server => 
+                        server.tag !== 'dns_fakeip' && server.address !== 'fakeip');
+                }
+                
+                if (this.config.dns.rules) {
+                    this.config.dns.rules = this.config.dns.rules.filter(rule => 
+                        rule.server !== 'dns_fakeip');
+                }
+            }
+        }
+
+        // 处理Tun模式选项
+        if (!this.options.enableTun) {
+            if (this.config.inbounds && Array.isArray(this.config.inbounds)) {
+                this.config.inbounds = this.config.inbounds.filter(inbound => inbound.type !== 'tun');
+            }
+        }
+
+        // 处理自定义secret
+        if (this.options.customSecret) {
+            if (!this.config.experimental) {
+                this.config.experimental = {};
+            }
+            if (!this.config.experimental.clash_api) {
+                this.config.experimental.clash_api = {};
+            }
+            this.config.experimental.clash_api.secret = this.options.customSecret;
+        }
+
+        // 处理监听端口
+        if (this.options.listenPort) {
+            // 修改所有非tun入站的端口
+            if (this.config.inbounds && Array.isArray(this.config.inbounds)) {
+                this.config.inbounds.forEach(inbound => {
+                    if (inbound.type !== 'tun') {
+                        inbound.listen_port = parseInt(this.options.listenPort);
+                    }
+                });
+            }
+        }
 
         return yaml.dump(this.config);
     }

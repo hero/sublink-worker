@@ -79,7 +79,15 @@ const translations = {
       'GLOBAL': 'GLOBAL'
     },
     UASettings: '自定义UserAgent',
-    UAtip: '默认值curl/7.74.0'
+    UAtip: '默认值curl/7.74.0',
+    enableFakeIP: '启用FakeIP',
+    enableTun: '启用Tun模式',
+    secret: 'Web UI密码',
+    secretPlaceholder: 'herowuking.singbox',
+    listenPort: '监听端口',
+    saveConfigError: '保存配置失败',
+    saveConfigSuccess: '配置保存成功',
+    error: '错误'
   },
   'en-US': {
     missingInput: 'Missing input parameter',
@@ -158,7 +166,15 @@ const translations = {
       'GLOBAL': 'GLOBAL'
     },
     UASettings: 'Custom UserAgent',
-    UAtip: 'By default it will use curl/7.74.0'
+    UAtip: 'Default value curl/7.74.0',
+    enableFakeIP: 'Enable FakeIP',
+    enableTun: 'Enable Tun Mode',
+    secret: 'Web UISecret',
+    secretPlaceholder: 'herowuking.singbox',
+    listenPort: 'Listen Port',
+    saveConfigError: 'Failed to save configuration',
+    saveConfigSuccess: 'Configuration saved successfully',
+    error: 'Error'
   },
   'fa': {
     missingInput: 'پارامتر ورودی وجود ندارد',
@@ -234,10 +250,18 @@ const translations = {
       'Financial': '💰 سرویس‌های مالی',
       'Cloud Services': '☁️ سرویس‌های ابری',
       'Non-China': '🌐 خارج از چین',
-      'GLOBAL': 'GLOBAL'
+      'GLOBAL': 'در سراسر جهان'
     },
     UASettings: 'Custom UserAgent',
-    UAtip: 'By default it will use curl/7.74.0'
+    UAtip: 'Default value curl/7.74.0',
+    enableFakeIP: 'فعال کردن FakeIP',
+    enableTun: 'فعال کردن حالت Tun',
+    secret: 'Web UIرمز عبور',
+    secretPlaceholder: 'herowuking.singbox',
+    listenPort: 'پورت گوش دادن',
+    saveConfigError: 'خطا در ذخیره پیکربندی',
+    saveConfigSuccess: 'پیکربندی با موفقیت ذخیره شد',
+    error: 'خطا'
   }
 };
 

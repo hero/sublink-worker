@@ -63,8 +63,8 @@
 详细的 API 文档请参考 [API-doc.md](/docs/API-doc.md)
 
 ### 主要端点
-- `/singbox` - 生成 Sing-Box 配置
-- `/clash` - 生成 Clash 配置
+- `/singbox` - 生成 Sing-Box 配置，参考[SingBox配置文档](https://sing-box.sagernet.org/zh/configuration/)
+- `/clash` - 生成 Clash 配置，参考[mihomo配置文档](https://wiki.metacubex.one/config/)
 - `/xray` - 生成 Xray 配置
 - `/shorten` - 生成短链接
 
@@ -104,8 +104,10 @@ cd sing-box
 git submodule update --init --recursive
 
 # 查看最新Release版本号, 为 v1.11.7 (需要和你安装的SingBox版本一致)
+# 但是在官方Release版本, 在我的Win11上运行出错, 所以我最终是签出的v1.11.6版本
 git describe --tags $(git rev-list --tags=$(git tag | grep -vE 'beta|alpha|rc') --max-count=1)
-git checkout v1.11.7
+# git checkout v1.11.7
+git checkout v1.11.6
 git switch -c latest
 
 # 一条命令搞定
@@ -118,6 +120,21 @@ git fetch --tags && git checkout $(git describe --tags $(git rev-list --tags=$(g
 git submodule deinit -f sing-box
 git rm -f sing-box
 rm -rf .git/modules/sing-box
+```
+
+在Win11上编译`sing-box`：
+
+```powershell
+# 设置 GOTOOLCHAIN 环境变量
+$env:GOTOOLCHAIN = "local"
+
+# 获取版本信息
+$version = go run ./cmd/internal/read_tag
+
+# 编译命令
+go build -v -trimpath -ldflags "-X 'github.com/sagernet/sing-box/constant.Version=$version' -s -w -buildid=" `
+-tags "with_gvisor,with_dhcp,with_wireguard,with_reality_server,with_clash_api,with_quic,with_utls,with_tailscale" `
+-o sing-box.exe ./cmd/sing-box
 ```
 
 
