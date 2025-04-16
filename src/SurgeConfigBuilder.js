@@ -97,7 +97,22 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                 }
                 break;
             case 'tuic':
-                surgeProxy = `${proxy.tag} = tuic, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}, uuid=${proxy.uuid}`;
+                // 处理tuic的uuid和password
+                let tuicUuid = proxy.uuid;
+                let tuicPassword = proxy.password;
+                
+                // 检查uuid字段是否包含冒号(格式如: "uuid:password")
+                if (proxy.uuid && proxy.uuid.includes(':')) {
+                    const parts = proxy.uuid.split(':');
+                    tuicUuid = parts[0]; // 取冒号前面的uuid
+                    
+                    // 如果password为undefined且uuid字段包含冒号，使用冒号后面的部分作为password
+                    if (proxy.password === 'undefined' || proxy.password === undefined) {
+                        tuicPassword = parts[1];
+                    }
+                }
+                
+                surgeProxy = `${proxy.tag} = tuic, ${proxy.server}, ${proxy.server_port}, password=${tuicPassword === 'undefined' ? '' : tuicPassword}, uuid=${tuicUuid}`;
                 if (proxy.tls?.server_name) {
                     surgeProxy += `, sni=${proxy.tls.server_name}`;
                 }

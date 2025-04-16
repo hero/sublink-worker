@@ -35,6 +35,24 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
+        // 如果是tuic类型代理，处理uuid和password
+        if (proxy.type === 'tuic' && proxy.uuid) {
+            // 检查uuid字段是否包含冒号(格式如: "uuid:password")
+            if (proxy.uuid.includes(':')) {
+                const parts = proxy.uuid.split(':');
+                const originalProxy = {...proxy}; // 复制原始代理对象
+                
+                // 修改uuid为冒号前面的部分
+                originalProxy.uuid = parts[0];
+                
+                // 如果password为undefined且uuid字段包含冒号，使用冒号后面的部分作为password
+                if (originalProxy.password === 'undefined' || originalProxy.password === undefined) {
+                    originalProxy.password = parts[1];
+                }
+                
+                return originalProxy;
+            }
+        }
         return proxy;
     }
 

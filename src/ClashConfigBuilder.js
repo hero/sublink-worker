@@ -33,6 +33,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     }
 
     convertProxy(proxy) {
+        
         switch (proxy.type) {
             case 'shadowsocks':
                 return {
@@ -127,14 +128,29 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     'flow': proxy.flow ?? undefined,
                 };
             case 'tuic':
+                // 处理tuic的uuid和password
+                let tuicUuid = proxy.uuid;
+                let tuicPassword = proxy.password;
+                
+                // 检查uuid字段是否包含冒号(格式如: "uuid:password")
+                if (proxy.uuid && proxy.uuid.includes(':')) {
+                    const parts = proxy.uuid.split(':');
+                    tuicUuid = parts[0]; // 取冒号前面的uuid
+                    
+                    // 如果password为undefined且uuid字段包含冒号，使用冒号后面的部分作为password
+                    if (proxy.password === 'undefined' || proxy.password === undefined) {
+                        tuicPassword = parts[1];
+                    }
+                }
+                
                 return {
                     name: proxy.tag,
                     type: proxy.type,
                     server: proxy.server,
                     port: proxy.server_port,
-                    uuid: proxy.uuid,
-                    password: proxy.password,
-                    'congestion-controller': proxy.congestion,
+                    uuid: tuicUuid,
+                    password: tuicPassword === 'undefined' ? '' : tuicPassword,
+                    'congestion-controller': proxy.congestion_control || proxy.congestion,
                     'skip-cert-verify': proxy.tls.insecure,
                     'disable-sni': true,
                     'alpn': proxy.tls.alpn,
